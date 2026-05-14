@@ -1,0 +1,23 @@
+<http://dbpedia.org/resource/Munich> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/City> .
+<http://dbpedia.org/resource/Munich> <http://www.w3.org/2000/01/rdf-schema#label> "Munich"@en .
+<http://dbpedia.org/resource/Munich> <http://dbpedia.org/ontology/country> <http://dbpedia.org/resource/Germany> .
+<http://dbpedia.org/resource/Munich> <http://dbpedia.org/ontology/populationTotal> "1512491" .
+<http://dbpedia.org/resource/Munich> <http://dbpedia.org/ontology/areaTotal> "310.7" .
+<http://dbpedia.org/resource/Munich> <http://www.w3.org/2002/07/owl#differentFrom> <http://dbpedia.org/resource/Berlin> .
+
+<http://dbpedia.org/resource/Berlin> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/City> .
+<http://dbpedia.org/resource/Berlin> <http://www.w3.org/2000/01/rdf-schema#label> "Berlin"@en .
+<http://dbpedia.org/resource/Berlin> <http://dbpedia.org/ontology/country> <http://dbpedia.org/resource/Germany> .
+<http://dbpedia.org/resource/Berlin> <http://dbpedia.org/ontology/populationTotal> "3677472" .
+<http://dbpedia.org/resource/Berlin> <http://dbpedia.org/ontology/areaTotal> "891.8" .
+<http://dbpedia.org/resource/Berlin> <http://www.w3.org/2002/07/owl#differentFrom> <http://dbpedia.org/resource/Hamburg> .
+
+<http://dbpedia.org/resource/Hamburg> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/City> .
+<http://dbpedia.org/resource/Hamburg> <http://www.w3.org/2000/01/rdf-schema#label> "Hamburg"@en .
+<http://dbpedia.org/resource/Hamburg> <http://dbpedia.org/ontology/country> <http://dbpedia.org/resource/Germany> .
+<http://dbpedia.org/resource/Hamburg> <http://dbpedia.org/ontology/populationTotal> "1892122" .
+<http://dbpedia.org/resource/Hamburg> <http://www.w3.org/2002/07/owl#differentFrom> <http://dbpedia.org/resource/Munich> .
+
+<http://dbpedia.org/resource/Germany> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> .
+<http://dbpedia.org/resource/Germany> <http://www.w3.org/2000/01/rdf-schema#label> "Germany"@en .
+<http://dbpedia.org/resource/Germany> <http://dbpedia.org/ontology/capital> <http://dbpedia.org/resource/Munich> .
