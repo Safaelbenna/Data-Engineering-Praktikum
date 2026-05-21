@@ -1,0 +1,17 @@
+services:
+  virtuoso:
+    image: openlink/virtuoso-opensource-7
+    container_name: deltagraph_virtdb
+    environment:
+      DBA_PASSWORD: mysecret
+      SPARQL_UPDATE: "true"
+      VIRT_Parameters_DirsAllowed: "/database/data/Decompressed-files"
+    ports:
+      - "1111:1111"
+      - "8890:8890"
+    volumes:
+      - virtuoso-db:/database
+      - ./data:/database/data
+
+volumes:
+  virtuoso-db:

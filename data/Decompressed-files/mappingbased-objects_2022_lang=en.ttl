@@ -1,0 +1,6 @@
+@prefix dbr: <http://dbpedia.org/resource/> .
+@prefix dbo: <http://dbpedia.org/ontology/> .
+
+dbr:Munich dbo:country dbr:Germany .
+dbr:Munich dbo:populationTotal "1512491" .
+dbr:Hamburg dbo:country dbr:Germany .
