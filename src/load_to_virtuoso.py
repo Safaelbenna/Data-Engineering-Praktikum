@@ -6,18 +6,18 @@ from config import (
     DBA_PASSWORD,
     LOCAL_DATA_DIR,
     VIRTUOSO_DATA_DIR,
-    GRAPH_2021,
-    GRAPH_2022,
+    GRAPH_v1,
+    GRAPH_v2,
 )
 from test_querying import graph_exists
 
 
 def get_graph_uri(filename: str) -> str:
-    if "2021" in filename:
-        return GRAPH_2021
+    if "v1" in filename:
+        return GRAPH_v1
 
-    if "2022" in filename:
-        return GRAPH_2022
+    if "v2" in filename:
+        return GRAPH_v2
 
     raise ValueError(f"Unknown year in filename: {filename}")
 

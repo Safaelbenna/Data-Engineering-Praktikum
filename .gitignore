@@ -1,6 +1,5 @@
 # data files
 DBpedia Snapshots/
-data/
 *.ttl
 *.bz2
 *.zip
