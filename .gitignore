@@ -1,2 +1,11 @@
-DBpedia Snapshots/mappingbased-objects_2021_lang=en.ttl.bz2 
-DBpedia Snapshots/mappingbased-objects_2022_lang=en.ttl.bz2 
+# data files
+DBpedia Snapshots/
+data/
+*.ttl
+*.bz2
+*.zip
+
+# Python auto generated
+__pycache__/
+*.pyc
+*.pyo
