@@ -8,7 +8,7 @@
 
 --- Added Triples ---
 
-<http://dbpedia.org/resource/Munich> <http://dbpedia.org/ontology/leaderName> <http://dbpedia.org/resource/Dieter_Reiter> .
+<http://dbpedia.org/resource/Munich> <http://dbpedia.org/ontology/leaderName> <http://dbpedia.org/resource/Dominik_Krause> .
 <http://dbpedia.org/resource/Berlin> <http://dbpedia.org/ontology/leaderName> <http://dbpedia.org/resource/Kai_Wegner> .
 <http://dbpedia.org/resource/Hamburg> <http://dbpedia.org/ontology/areaTotal> "755.3" .
 <http://dbpedia.org/resource/Hamburg> <http://dbpedia.org/ontology/leaderName> <http://dbpedia.org/resource/Peter_Tschentscher> .

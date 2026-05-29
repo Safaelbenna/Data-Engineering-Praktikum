@@ -8,3 +8,5 @@ DBpedia Snapshots/
 __pycache__/
 *.pyc
 *.pyo
+*1.txt
+*2.txt

@@ -8,6 +8,8 @@ from config import (
     VIRTUOSO_DATA_DIR,
     GRAPH_v1,
     GRAPH_v2,
+    GRAPH_2021,
+    GRAPH_2022,
 )
 from test_querying import graph_exists
 
@@ -18,6 +20,12 @@ def get_graph_uri(filename: str) -> str:
 
     if "v2" in filename:
         return GRAPH_v2
+    
+    if "2021" in filename:
+        return GRAPH_2021
+    
+    if "2022" in filename:
+        return GRAPH_2022
 
     raise ValueError(f"Unknown year in filename: {filename}")
 
