@@ -44,6 +44,8 @@ preview_graph(GRAPH_2022)
 print("\nDelta Computation")
 additions_computation(GRAPH_v1, GRAPH_v2)
 deletions_computation(GRAPH_v1, GRAPH_v2)
+additions_computation(GRAPH_2021, GRAPH_2022)
+deletions_computation(GRAPH_2021, GRAPH_2022)
 
 
 

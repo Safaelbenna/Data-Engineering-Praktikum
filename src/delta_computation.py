@@ -15,6 +15,7 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
         }}
     }}
     }};
+    exit;
     """
 
     start = time.time()
@@ -31,6 +32,14 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
         )
 
     end = time.time()
+
+    with open(f"additions_{value}2_minus_{value}1.txt", "r", errors="replace") as file:
+        for line in file:
+            if "Rows. --" in line:
+                parts = line.split()
+                rows, msec = int(parts[0]), int(parts[3])
+                print(f"{rows:,} rows in ({msec})ms {msec/1000:.1f}s ({msec/60000:.1f} min)")
+
 
     seconds = end - start
 
@@ -53,6 +62,7 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
         }}
     }}
     }};
+    exit;
     """
 
     start = time.time()
@@ -69,6 +79,13 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
         )
 
     end = time.time()
+
+    with open(f"deletions_{value}1_minus_{value}2.txt", "r", errors="replace") as file:
+        for line in file:
+            if "Rows. --" in line:
+                parts = line.split()
+                rows, msec = int(parts[0]), int(parts[3])
+                print(f"{rows:,} rows in ({msec})ms {msec/1000:.1f}s ({msec/60000:.1f} min)")
 
     seconds = end - start
 
