@@ -26,6 +26,7 @@ def graph_exists(graph_uri: str) -> bool:
     """
 
     result = run_query(query)
+    print(result)
     text = result.decode("utf-8").strip()
     value = text.splitlines()[-1]
     return bool(int(value))
