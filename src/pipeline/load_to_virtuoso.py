@@ -10,8 +10,6 @@ from config import (
     GRAPH_v2,
     GRAPH_2021,
     GRAPH_2022,
-    GRAPH_DELTA_ADDED,
-    GRAPH_DELTA_REMOVED
 )
 from test_querying import graph_exists
 
@@ -64,45 +62,23 @@ def load_file(filename: str, graph_uri: str) -> None:
     #print(f"Loaded {filename} into {graph_uri}")
     print(f"Finished loading command for {filename} into {graph_uri}")
 
-def load_trig_file(filename: str) -> None:
-    # trig already has named graphs embedded, no need to specify a graph_uri
-    sql = f"""
-    DB.DBA.TTLP_MT(file_to_string_output('{VIRTUOSO_DATA_DIR}/{filename}'), '', 'http://dbpedia.org/delta/', 256);
-    """
-    command = [
-        "docker", "exec", "-i", CONTAINER_NAME,
-        "isql", "1111", DBA_USER, DBA_PASSWORD,
-    ]
-    result = subprocess.run(command, input=sql, text=True, capture_output=True)
 
-    if result.returncode != 0:
-        raise RuntimeError("Loading trig failed.")
-
-    print(f"Finished loading {filename}")
 
 
 def load_all_ttl_files() -> None:
-    ttl_files = sorted(LOCAL_DATA_DIR.glob("*.ttl")) + sorted(LOCAL_DATA_DIR.glob("*.trig"))
+    all_files = set(LOCAL_DATA_DIR.glob("*.ttl"))
+    additions = set(LOCAL_DATA_DIR.glob("additions_*.ttl"))
+    deletions = set(LOCAL_DATA_DIR.glob("deletions_*.ttl"))
+    ttl_files = sorted(all_files - additions - deletions)
+    
     if not ttl_files:
         raise FileNotFoundError(f"No .ttl files found in {LOCAL_DATA_DIR}")
 
     for file_path in ttl_files:
         filename = file_path.name
 
-        if "2021" in filename or "2022" in filename:
-            print(f"Skipping large file: {filename}")
+        graph_uri = get_graph_uri(filename)
+        if graph_exists(graph_uri):
+            print(f"Already loaded: {graph_uri}")
             continue
-
-        if filename.endswith(".trig"):
-            # if graph_exists(GRAPH_DELTA_ADDED) and graph_exists(GRAPH_DELTA_REMOVED):
-            #     print(f"Already loaded: delta graphs")
-            #     continue
-            # load_trig_file(filename)
-            print(f"Skipping trig file: {filename}")
-            continue
-        else:
-            graph_uri = get_graph_uri(filename)
-            if graph_exists(graph_uri):
-                print(f"Already loaded: {graph_uri}")
-                continue
-            load_file(filename, graph_uri)
+        load_file(filename, graph_uri)
