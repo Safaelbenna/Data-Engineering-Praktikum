@@ -1,7 +1,7 @@
 from load_to_virtuoso import load_all_ttl_files
 from test_querying import run_query, graph_exists
 from config import GRAPH_v1, GRAPH_v2, GRAPH_2021, GRAPH_2022
-from delta_computation import additions_computation, deletions_computation
+from delta_computation import additions_computation, deletions_computation, convert_isql_output_to_nt
 
 
 def preview_graph(graph_uri: str) -> None:
@@ -22,9 +22,7 @@ def preview_graph(graph_uri: str) -> None:
     print(result)
 
 print("Loading TTL files...")
-""" 
-    can be removed later since it is only for snapshots that are not loaded yet 
-"""
+
 load_all_ttl_files()
 
 """ 
@@ -52,7 +50,7 @@ additions_computation(GRAPH_v1, GRAPH_v2)
 deletions_computation(GRAPH_v1, GRAPH_v2)
 additions_computation(GRAPH_2021, GRAPH_2022)
 deletions_computation(GRAPH_2021, GRAPH_2022)
-
+#convert_isql_output_to_nt("additions_2022_minus_2021.txt", "additions_2022_minus_2021.ttl")
 
 
 

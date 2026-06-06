@@ -1,4 +1,6 @@
 import subprocess
+import re
+import time
 
 from config import (
     CONTAINER_NAME,
@@ -35,7 +37,6 @@ def load_file(filename: str, graph_uri: str) -> None:
     ld_dir('{VIRTUOSO_DATA_DIR}', '{filename}', '{graph_uri}');
     rdf_loader_run();
     """
-    # maybe add checkpoint; to sql for larger files.
 
     command = [
         "docker",
@@ -59,7 +60,6 @@ def load_file(filename: str, graph_uri: str) -> None:
         print(result.stderr)
         raise RuntimeError("Loading failed.")
 
-    #print(f"Loaded {filename} into {graph_uri}")
     print(f"Finished loading command for {filename} into {graph_uri}")
 
 
