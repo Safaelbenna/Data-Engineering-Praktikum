@@ -45,12 +45,12 @@ preview_graph(GRAPH_2021)
 preview_graph(GRAPH_2022)
 
 
-print("\nDelta Computation")
-additions_computation(GRAPH_v1, GRAPH_v2)
-deletions_computation(GRAPH_v1, GRAPH_v2)
-additions_computation(GRAPH_2021, GRAPH_2022)
-deletions_computation(GRAPH_2021, GRAPH_2022)
-#convert_isql_output_to_nt("additions_2022_minus_2021.txt", "additions_2022_minus_2021.ttl")
+# print("\nDelta Computation")
+# additions_computation(GRAPH_v1, GRAPH_v2)
+# deletions_computation(GRAPH_v1, GRAPH_v2)
+# additions_computation(GRAPH_2021, GRAPH_2022)
+# deletions_computation(GRAPH_2021, GRAPH_2022)
+# convert_isql_output_to_nt("additions_2022_minus_2021.txt", "additions_2022_minus_2021.ttl")
 
 
 
