@@ -47,7 +47,6 @@ def load_file(filename: str, graph_uri: str) -> None:
         DBA_USER,
         DBA_PASSWORD,
     ]
-    start = time.perf_counter()
 
     start = time.perf_counter()
 
