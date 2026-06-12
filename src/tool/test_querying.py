@@ -2,7 +2,7 @@ from SPARQLWrapper import SPARQLWrapper, CSV
 from config import SPARQL_ENDPOINT
 
 
-def run_query(query: str) -> dict:
+def run_query(query: str) -> bytes:
     """
     Send a SPARQL query to Virtuoso and return the result as CSV.
     """

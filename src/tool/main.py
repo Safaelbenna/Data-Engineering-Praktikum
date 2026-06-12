@@ -1,7 +1,7 @@
 from load_to_virtuoso import load_all_ttl_files
 from test_querying import run_query, graph_exists
 from config import ADDED_GRAPH_S, REMOVED_GRAPH_S, ADDED_GRAPH_B, REMOVED_GRAPH_B
-import subprocess
+from query_batch_splitting import generate_batches
 
 
 def preview_graph(graph_uri: str) -> None:
@@ -43,7 +43,5 @@ preview_graph(REMOVED_GRAPH_S)
 preview_graph(ADDED_GRAPH_B)
 preview_graph(REMOVED_GRAPH_B)
 
-
-
-
-
+generate_batches(ADDED_GRAPH_S, REMOVED_GRAPH_S)
+generate_batches(ADDED_GRAPH_B, REMOVED_GRAPH_B)
