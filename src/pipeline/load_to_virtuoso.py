@@ -1,5 +1,4 @@
 import subprocess
-import re
 import time
 
 from config import (
@@ -70,11 +69,16 @@ def load_file(filename: str, graph_uri: str) -> None:
 
 
 
-def load_all_ttl_files() -> None:
-    all_files = set(LOCAL_DATA_DIR.glob("*.ttl"))
-    additions = set(LOCAL_DATA_DIR.glob("additions_*.ttl"))
-    deletions = set(LOCAL_DATA_DIR.glob("deletions_*.ttl"))
-    ttl_files = sorted(all_files - additions - deletions)
+def load_selected_ttl_files(file_older: str, file_newer: str) -> None:
+    
+    selected = {file_older, file_newer}
+    # all_files = set(LOCAL_DATA_DIR.glob("*.ttl"))
+    # additions = set(LOCAL_DATA_DIR.glob("additions_*.ttl"))
+    # deletions = set(LOCAL_DATA_DIR.glob("deletions_*.ttl"))
+    # ttl_files = sorted(all_files - additions - deletions)
+    ttl_files = sorted(
+        f for f in LOCAL_DATA_DIR.glob("*.ttl") if f.name in selected
+    )
     
     if not ttl_files:
         raise FileNotFoundError(f"No .ttl files found in {LOCAL_DATA_DIR}")
