@@ -1,33 +1,65 @@
-from config import NUMBER_OF_BATCHES, NUMBER_OF_ADDITIONS_PER_BATCH, NUMBER_OF_DELETIONS_PER_BATCH
-from test_querying import run_query
+from config import SPARQL_ENDPOINT
+import time
+import threading
+import requests
 
 
-def fetch_triples(graph_uri: str, limit: int, offset: int) -> bytes:
+def fetch_triples(graph_uri: str, limit: int, offset: int) -> str:
     query = f"""
-        SELECT {{ ?s ?p ?o }}
+        CONSTRUCT {{ ?s ?p ?o }}
         WHERE {{
         GRAPH <{graph_uri}> {{ ?s ?p ?o }}
         }}
         LIMIT {limit}
         OFFSET {offset}
         """
-    resp = run_query(query)
+    resp = requests.get(
+        SPARQL_ENDPOINT,
+        params={"query": query, "format": "text/plain"},
+        timeout=120,
+    )
     resp.raise_for_status() #Raises an exception if the HTTP response status code indicates an error (4xx or 5xx)
-    return resp
+    return resp.text
 
-def generate_batches(graph_uri_added: str, graph_uri_deleted: str) -> None:
+def count_triples_in_text(text: str) -> int:
+    text = text.strip()
+    if not text or text.startswith("# Empty"):
+        return 0
+    return len(text.splitlines())
+
+def generate_batches(graph_uri_added: str,
+    graph_uri_deleted: str,
+    num_batches: int,
+    additions_per_batch: int,
+    deletions_per_batch: int) -> None:
+
+    def helper(name, graph_uri, limit, offset):
+        results[name] = fetch_triples(graph_uri, limit, offset)
     
-    for i in range(NUMBER_OF_BATCHES):
-        additions = fetch_triples(graph_uri_added,   NUMBER_OF_ADDITIONS_PER_BATCH, i * NUMBER_OF_ADDITIONS_PER_BATCH)
-        deletions = fetch_triples(graph_uri_deleted, NUMBER_OF_DELETIONS_PER_BATCH, i * NUMBER_OF_DELETIONS_PER_BATCH)
+    for i in range(num_batches):
+
+        results = {}
+
+        start_add = time.perf_counter()
+
+        thread_add = threading.Thread(target=helper, args=("additions", graph_uri_added, additions_per_batch, i * additions_per_batch))
+        thread_del = threading.Thread(target=helper, args=("deletions", graph_uri_deleted, deletions_per_batch, i * deletions_per_batch))
+
+        thread_add.start()
+        thread_del.start()
+        thread_add.join()
+        thread_del.join()
+
+        end_del = time.perf_counter()
       
         batch = {
-        "additions": additions,
-        "length_additions": len(additions.strip().splitlines()),       
-        "deletions": deletions,
-        "length_deletions": len(deletions.strip().splitlines())  
+        "additions": results["additions"],
+        "length_additions": count_triples_in_text(results["additions"]),       
+        "deletions": results["deletions"],
+        "length_deletions": count_triples_in_text(results["deletions"]) 
         }
         
         print(f"--- Batch {i+1} ---")
         print(batch)
+        print("time: ", end_del - start_add)
         print()

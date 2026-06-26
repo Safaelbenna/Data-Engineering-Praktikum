@@ -43,5 +43,5 @@ preview_graph(REMOVED_GRAPH_S)
 preview_graph(ADDED_GRAPH_B)
 preview_graph(REMOVED_GRAPH_B)
 
-generate_batches(ADDED_GRAPH_S, REMOVED_GRAPH_S)
-generate_batches(ADDED_GRAPH_B, REMOVED_GRAPH_B)
+#generate_batches(ADDED_GRAPH_S, REMOVED_GRAPH_S)
+generate_batches(ADDED_GRAPH_B, REMOVED_GRAPH_B, 10, 50, 60)
