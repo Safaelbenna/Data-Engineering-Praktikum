@@ -1,5 +1,6 @@
 import subprocess
 import time
+import requests
 
 from config import (
     CONTAINER_NAME,
@@ -7,28 +8,29 @@ from config import (
     DBA_PASSWORD,
     LOCAL_DATA_DIR,
     VIRTUOSO_DATA_DIR,
-    ADDED_GRAPH_S,
-    REMOVED_GRAPH_S,
-    ADDED_GRAPH_B,
-    REMOVED_GRAPH_B,
+    SPARQL_ENDPOINT
 )
 from test_querying import graph_exists
 
 
+
+
 def get_graph_uri(filename: str) -> str:
-    if "additions_v" in filename:
-        return ADDED_GRAPH_S
 
-    if "deletions_v" in filename:
-        return REMOVED_GRAPH_S
-    
-    if "additions_202" in filename:
-        return ADDED_GRAPH_B
-    
-    if "deletions_202" in filename:
-        return REMOVED_GRAPH_B
+    if filename.startswith("additions_"):
+        operation = "added"
+        rest = filename[len("additions_"):]
+    elif filename.startswith("deletions_"):
+        operation = "removed"
+        rest = filename[len("deletions_"):]
+    else:
+        raise ValueError(f"Unknown file type: {filename}")
 
-    raise ValueError(f"Unknown year in filename: {filename}")
+    # rest is now: small_dataset_v2_minus_v1.ttl
+    rest = rest.replace(".ttl", "")
+    dataset_name = rest.split("_v")[0].split("_202")[0]  # everything before the version part
+
+    return f"http://dbpedia.org/delta/{dataset_name}/{operation}"
 
 
 def load_file(filename: str, graph_uri: str) -> None:
@@ -70,12 +72,12 @@ def load_file(filename: str, graph_uri: str) -> None:
 
 
 
-def load_all_ttl_files() -> None:
-    addition_files = sorted(LOCAL_DATA_DIR.glob("additions_*.ttl"))
-    deletion_files = sorted(LOCAL_DATA_DIR.glob("deletions_*.ttl"))
-    
-    target_files = addition_files + deletion_files
-    
+def load_selected_delta_files(additions_file: str, deletions_file: str) -> None:
+    selected = {additions_file, deletions_file}
+    target_files = sorted(
+        f for f in LOCAL_DATA_DIR.glob("*.ttl") if f.name in selected
+    )
+
     if not target_files:
         raise FileNotFoundError(f"No additions/deletions .ttl files found in {LOCAL_DATA_DIR}")
 
@@ -86,3 +88,4 @@ def load_all_ttl_files() -> None:
             print(f"Already loaded: {graph_uri}")
             continue
         load_file(filename, graph_uri)
+
