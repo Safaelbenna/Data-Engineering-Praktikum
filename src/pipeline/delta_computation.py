@@ -1,6 +1,6 @@
 import subprocess
 import time
-
+import os
 
 def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
     query = f"""
@@ -60,6 +60,11 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
     )
     end = time.perf_counter()
     seconds = end - start
+    # deleting the .txt file
+    if os.path.exists(f"additions_{dataset_name}_{v2}_minus_{v1}.txt"):
+        os.remove(f"additions_{dataset_name}_{v2}_minus_{v1}.txt")
+    else:
+        raise FileNotFoundError("Trying to delete a text file that does not exist")
 
     print("Finished")
     print(f"Time: {seconds:.2f} seconds")
@@ -122,8 +127,12 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
         f"test data/deletions_{dataset_name}_{v1}_minus_{v2}.ttl"
     )
     end = time.perf_counter()
-
     seconds = end - start
+    # deleting the .txt file
+    if os.path.exists(f"deletions_{dataset_name}_{v1}_minus_{v2}.txt"):
+        os.remove(f"deletions_{dataset_name}_{v1}_minus_{v2}.txt")
+    else:
+        raise FileNotFoundError("Trying to delete a text file that does not exist")
 
     print("Finished")
     print(f"Time: {seconds:.2f} seconds")
