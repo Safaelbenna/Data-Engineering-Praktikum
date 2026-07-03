@@ -21,12 +21,15 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
     """
 
     start = time.perf_counter()
-    value = "v" if ("v" in graph_uri1) else "202"
+    #value = "v" if ("v" in graph_uri1) else "202"
     dataset_name = graph_uri1.rstrip("/").split("/")[-1]
+    v1 = graph_uri1.rstrip("/").split("/")[-2]
+    v2 = graph_uri2.rstrip("/").split("/")[-2]
+
 
     print("\nComputing additions...")
 
-    with open(f"additions_{dataset_name}_{value}2_minus_{value}1.txt", "w") as output:
+    with open(f"additions_{dataset_name}_{v2}_minus_{v1}.txt", "w") as output:
         subprocess.run(
             ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
             input=query,
@@ -36,7 +39,7 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
 
     end = time.perf_counter()
 
-    with open(f"additions_{dataset_name}_{value}2_minus_{value}1.txt", "r", errors="replace") as file:
+    with open(f"additions_{dataset_name}_{v2}_minus_{v1}.txt", "r", errors="replace") as file:
         for line in file:
             if "Rows. --" in line:
                 parts = line.split()
@@ -52,8 +55,8 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
     print("converting response in a TTL file...\n")
     start = time.perf_counter()
     convert_isql_output_to_nt(
-        f"additions_{dataset_name}_{value}2_minus_{value}1.txt",
-        f"test data/additions_{dataset_name}_{value}2_minus_{value}1.ttl"
+        f"additions_{dataset_name}_{v2}_minus_{v1}.txt",
+        f"test data/additions_{dataset_name}_{v2}_minus_{v1}.ttl"
     )
     end = time.perf_counter()
     seconds = end - start
@@ -82,12 +85,13 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
     """
 
     start = time.perf_counter()
-    value = "v" if ("v" in graph_uri1) else "202"
     dataset_name = graph_uri1.rstrip("/").split("/")[-1]
+    v1 = graph_uri1.rstrip("/").split("/")[-2]
+    v2 = graph_uri2.rstrip("/").split("/")[-2]
 
     print("\nComputing deletions...")
 
-    with open(f"deletions_{dataset_name}_{value}1_minus_{value}2.txt", "w") as output:
+    with open(f"deletions_{dataset_name}_{v1}_minus_{v2}.txt", "w") as output:
         subprocess.run(
             ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
             input=query,
@@ -98,7 +102,7 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
     end = time.perf_counter()
 
 
-    with open(f"deletions_{dataset_name}_{value}1_minus_{value}2.txt", "r", errors="replace") as file:
+    with open(f"deletions_{dataset_name}_{v1}_minus_{v2}.txt", "r", errors="replace") as file:
         for line in file:
             if "Rows. --" in line:
                 parts = line.split()
@@ -114,8 +118,8 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
     print("converting response in a TTL file...\n")
     start = time.perf_counter()
     convert_isql_output_to_nt(
-        f"deletions_{dataset_name}_{value}1_minus_{value}2.txt",
-        f"test data/deletions_{dataset_name}_{value}1_minus_{value}2.ttl"
+        f"deletions_{dataset_name}_{v1}_minus_{v2}.txt",
+        f"test data/deletions_{dataset_name}_{v1}_minus_{v2}.ttl"
     )
     end = time.perf_counter()
 

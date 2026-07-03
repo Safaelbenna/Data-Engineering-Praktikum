@@ -7,11 +7,11 @@ CONTAINER_NAME = "deltagraph_virtuoso"
 
 DBA_USER = "dba"
 DBA_PASSWORD = "mysecret"
+BASE_URI = "http://dbpedia.org"
 
 SPARQL_ENDPOINT = "http://localhost:8890/sparql"
 
-# Graph URI's can be changed
-GRAPH_v1 = "http://dbpedia.org/snapshot/v1/small" 
-GRAPH_v2 = "http://dbpedia.org/snapshot/v2/small"
-GRAPH_2021 = "http://dbpedia.org/snapshot/2021/mappingbased-objects" 
-GRAPH_2022 = "http://dbpedia.org/snapshot/2022/mappingbased-objects"
+
+
+def get_graph_uri(dataset_name: str, tag: str) -> str:
+    return f"{BASE_URI}/snapshot/{tag}/{dataset_name}"

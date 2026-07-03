@@ -59,6 +59,8 @@ Then clear the graph(s) you want to remove (swap in the relevant graph URI):
 ```
 SPARQL CLEAR GRAPH <http://dbpedia.org/snapshot/v1/mappingbased-objects>;
 SPARQL CLEAR GRAPH <http://dbpedia.org/snapshot/v2/mappingbased-objects>;
+
+
 ```
 It's also worth clearing the corresponding entry from the load list so Virtuoso doesn't think the graph is still loaded:
 ```
@@ -67,6 +69,8 @@ DELETE FROM DB.DBA.load_list WHERE ll_graph IN (
     'http://dbpedia.org/snapshot/v2/mappingbased-objects'
 );
 ```
+
+
 
 A checkpoint may be needed after this — still confirming. (verify whether to keep this or not)
 

@@ -7,28 +7,12 @@ from config import (
     DBA_PASSWORD,
     LOCAL_DATA_DIR,
     VIRTUOSO_DATA_DIR,
-    GRAPH_v1,
-    GRAPH_v2,
-    GRAPH_2021,
-    GRAPH_2022,
 )
+from config import get_graph_uri
 from test_querying import graph_exists
 
 
-def get_graph_uri(filename: str) -> str:
-    if "v1" in filename:
-        return GRAPH_v1
 
-    if "v2" in filename:
-        return GRAPH_v2
-    
-    if "2021" in filename:
-        return GRAPH_2021
-    
-    if "2022" in filename:
-        return GRAPH_2022
-
-    raise ValueError(f"Unknown year in filename: {filename}")
 
 
 def load_file(filename: str, graph_uri: str) -> None:
@@ -72,10 +56,6 @@ def load_file(filename: str, graph_uri: str) -> None:
 def load_selected_ttl_files(file_older: str, file_newer: str) -> None:
     
     selected = {file_older, file_newer}
-    # all_files = set(LOCAL_DATA_DIR.glob("*.ttl"))
-    # additions = set(LOCAL_DATA_DIR.glob("additions_*.ttl"))
-    # deletions = set(LOCAL_DATA_DIR.glob("deletions_*.ttl"))
-    # ttl_files = sorted(all_files - additions - deletions)
     ttl_files = sorted(
         f for f in LOCAL_DATA_DIR.glob("*.ttl") if f.name in selected
     )
@@ -85,8 +65,12 @@ def load_selected_ttl_files(file_older: str, file_newer: str) -> None:
 
     for file_path in ttl_files:
         filename = file_path.name
+        
+        parts = filename.split("_")
+        dataset_name = parts[0]
+        version = parts[1]
 
-        graph_uri = get_graph_uri(filename)
+        graph_uri = get_graph_uri(dataset_name, version)
         if graph_exists(graph_uri):
             print(f"Already loaded: {graph_uri}")
             continue

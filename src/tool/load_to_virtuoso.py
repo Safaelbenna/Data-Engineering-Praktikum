@@ -1,6 +1,5 @@
 import subprocess
 import time
-import requests
 
 from config import (
     CONTAINER_NAME,
@@ -8,29 +7,9 @@ from config import (
     DBA_PASSWORD,
     LOCAL_DATA_DIR,
     VIRTUOSO_DATA_DIR,
-    SPARQL_ENDPOINT
 )
+from config import get_graph_uri
 from test_querying import graph_exists
-
-
-
-
-def get_graph_uri(filename: str) -> str:
-
-    if filename.startswith("additions_"):
-        operation = "added"
-        rest = filename[len("additions_"):]
-    elif filename.startswith("deletions_"):
-        operation = "removed"
-        rest = filename[len("deletions_"):]
-    else:
-        raise ValueError(f"Unknown file type: {filename}")
-
-    # rest is now: small_dataset_v2_minus_v1.ttl
-    rest = rest.replace(".ttl", "")
-    dataset_name = rest.split("_v")[0].split("_202")[0]  # everything before the version part
-
-    return f"http://dbpedia.org/delta/{dataset_name}/{operation}"
 
 
 def load_file(filename: str, graph_uri: str) -> None:
@@ -79,13 +58,31 @@ def load_selected_delta_files(additions_file: str, deletions_file: str) -> None:
     )
 
     if not target_files:
-        raise FileNotFoundError(f"No additions/deletions .ttl files found in {LOCAL_DATA_DIR}")
+        print(f"No additions/deletions .ttl files found in {LOCAL_DATA_DIR}")
+        exit(1)
 
+    v1 = ""
+    v2 = ""
+    found = False
     for file_path in target_files:
-        filename = file_path.name
-        graph_uri = get_graph_uri(filename)
+        filename = file_path.stem
+        if filename.startswith("additions_") or filename.startswith("deletions_"):
+            rest = filename[len("additions_"):]        
+            parts = rest.split("_minus_")
+            dataset_name = "_".join(parts[0].split("_")[:-1])
+            if not found:
+                v1 = parts[1]                              
+                v2 = parts[0].split("_")[-1] 
+                found = True
+        tag = ""
+        if filename.startswith("additions_"):
+            tag = "added"
+        elif filename.startswith("deletions_"):
+            tag = "removed"   
+        graph_uri = get_graph_uri(dataset_name, tag, v1, v2)
+
         if graph_exists(graph_uri):
             print(f"Already loaded: {graph_uri}")
             continue
-        load_file(filename, graph_uri)
+        load_file(f"{filename}.ttl", graph_uri)
 

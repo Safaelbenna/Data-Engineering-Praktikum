@@ -1,12 +1,10 @@
-#from pathlib import Path
 import pyfiglet
 from rich.console import Console
 import questionary
-from config import LOCAL_DATA_DIR
+from config import LOCAL_DATA_DIR, get_graph_uri
 from delta_computation import additions_computation, deletions_computation
 from load_to_virtuoso import load_selected_ttl_files
 from test_querying import graph_exists, preview_graph
-#import json
 import time 
 
 console = Console()
@@ -54,12 +52,26 @@ def get_user_input() -> dict:
 
     versions = available_names[name]
     version_keys = sorted(versions.keys())
+    console.print(f"Available versions for '{name}': {', '.join(version_keys)}", style="cyan")
 
-    v1 = version_keys[0]
-    v2 = version_keys[1]
+    v1 = questionary.text(
+        "Enter the older version:",
+        validate=lambda text: True if text.strip() in version_keys
+                            else f"'{text.strip()}' not found. Available: {', '.join(version_keys)}"
+    ).ask()
+    v1 = v1.strip()
 
-    graph_uri_older = f"http://dbpedia.org/snapshot/{v1}/{name}"
-    graph_uri_newer = f"http://dbpedia.org/snapshot/{v2}/{name}"
+    remaining = [v for v in version_keys if v != v1]
+    v2 = questionary.text(
+        "Enter the newer version:",
+        validate=lambda text: True if text.strip() in remaining
+                            else f"'{text.strip()}' not found or already used. Available: {', '.join(remaining)}"
+    ).ask()
+    v2 = v2.strip()
+
+
+    graph_uri_older = get_graph_uri(name, v1)
+    graph_uri_newer = get_graph_uri(name, v2)
 
 
 
@@ -87,17 +99,6 @@ def main():
     params = get_user_input()
     console.print(params, style="blue")
     console.print()
-
-    #save the user snapshot choice in a json so that it could be later used by the tool
-    # STATE_FILE = Path(__file__).parent.parent / "user_input.json"
-    # with open(STATE_FILE, "w") as f:
-    #     json.dump({
-    #         "name": params["name"],
-    #         "v1": params["older_version"],
-    #         "v2": params["newer_version"],
-    #         "additions_file": f"additions_{params["name"]}_{params["newer_version"]}_minus_{params["older_version"]}.ttl",
-    #         "deletions_file": f"deletions_{params["name"]}_{params["older_version"]}_minus_{params["newer_version"]}.ttl"
-    #     }, f)
 
 
     console.print(f"Loading files into virtuoso is starting...\n", style="blue")

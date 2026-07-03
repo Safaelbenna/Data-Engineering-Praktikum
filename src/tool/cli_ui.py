@@ -1,22 +1,13 @@
-import json
-from pathlib import Path
 import time
 import pyfiglet
 import requests
 from rich.console import Console
-from config import LOCAL_DATA_DIR
+from config import LOCAL_DATA_DIR, get_graph_uri, SPARQL_ENDPOINT
 import questionary
 from batch_splitting_WT import generate_batches
 from load_to_virtuoso import load_selected_delta_files
-
-
-
-
-
-
 console = Console()
 
-SPARQL_ENDPOINT = "http://localhost:8890/sparql"
 
 
 def show_banner():
@@ -30,12 +21,11 @@ def get_available_names() -> dict:
 
     for filepath in LOCAL_DATA_DIR.glob("*.ttl"):
         filename = filepath.stem
-
         if filename.startswith("additions_"):
             rest = filename[len("additions_"):]        
-            parts = rest.split("_minus_")              
+            parts = rest.split("_minus_")
             v1 = parts[1]                              
-            v2 = parts[0].split("_")[-1]              
+            v2 = parts[0].split("_")[-1]   
             dataset_name = "_".join(parts[0].split("_")[:-1])
 
             if dataset_name not in names:
@@ -85,22 +75,46 @@ def ask_validated_int(message: str, max_value: int, max_value_label: str) -> int
 def get_user_input() -> dict:
     show_banner()
 
- 
-   
-    STATE_FILE = Path(__file__).parent.parent / "user_input.json"
-    with open(STATE_FILE, "r") as f:
-        state = json.load(f)
+    available_names = get_available_names()
 
-    name = state["name"]
-    v1 = state["v1"]
-    v2 = state["v2"]
-    additions_file = state["additions_file"]
-    deletions_file = state["deletions_file"]
+    valid_names = [name for name, versions in available_names.items() if len(versions) >= 2]
+
+    if not valid_names:
+        console.print("No datasets with two or more versions found in test data.", style="red")
+        raise SystemExit(1)
+
+    name = questionary.select(
+        "Select a dataset:",
+        choices=valid_names
+    ).ask()
+
+    versions = available_names[name]
+    version_keys = sorted(versions.keys())
+    console.print(f"Available versions for '{name}': {', '.join(version_keys)}", style="cyan")
+
+    v1 = questionary.text(
+        "Enter the older version:",
+        validate=lambda text: True if text.strip() in version_keys
+                            else f"'{text.strip()}' not found. Available: {', '.join(version_keys)}"
+    ).ask()
+    v1 = v1.strip()
+
+    remaining = [v for v in version_keys if v != v1]
+    v2 = questionary.text(
+        "Enter the newer version:",
+        validate=lambda text: True if text.strip() in remaining
+                            else f"'{text.strip()}' not found or already used. Available: {', '.join(remaining)}"
+    ).ask()
+    v2 = v2.strip()
+
+    additions_file = f"additions_{name}_{v2}_minus_{v1}.ttl"
+    deletions_file = f"deletions_{name}_{v1}_minus_{v2}.ttl"
 
     console.print(f"Start the batch splitting for {name}. The versions used are {v1} and {v2}\n", style="green")
 
-    added_graph_uri   = f"http://dbpedia.org/delta/{name}/added"
-    deleted_graph_uri = f"http://dbpedia.org/delta/{name}/removed"
+    added_graph_uri = get_graph_uri(name, "added", v1, v2)
+    deleted_graph_uri = get_graph_uri(name, "removed", v1, v2)
+
         
     console.print(f"Loading delta files into virtuoso is starting...\n", style="blue")
     load_selected_delta_files(additions_file, deletions_file)
