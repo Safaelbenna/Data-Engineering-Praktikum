@@ -13,7 +13,7 @@ console = Console()
 def show_banner():
     banner = pyfiglet.figlet_format("DeltaGraph")
     console.print(banner, style="yellow")
-    console.print("A CLI for batching knowledge graph deltas\n", style="green")
+    console.print("Pipeline: A CLI for batching knowledge graph deltas\n", style="green")
 
 
 def get_available_names() -> dict:
@@ -39,10 +39,10 @@ def get_user_input() -> dict:
     show_banner()
     available_names = get_available_names()
 
-    valid_names = [name for name, versions in available_names.items() if len(versions) == 2]
+    valid_names = [name for name, versions in available_names.items() if len(versions) >= 2]
 
     if not valid_names:
-        console.print("No datasets with exactly 2 versions found in test data.", style="red")
+        console.print("No datasets with 2 or more versions found in test data.", style="red")
         raise SystemExit(1)
 
     name = questionary.select(
@@ -95,12 +95,11 @@ def get_user_input() -> dict:
 
 def main():
     
-    start = time.perf_counter()
     params = get_user_input()
     console.print(params, style="blue")
     console.print()
 
-
+    start = time.perf_counter()
     console.print(f"Loading files into virtuoso is starting...\n", style="blue")
     load_selected_ttl_files(params["file_older"], params["file_newer"])
 
@@ -117,15 +116,23 @@ def main():
 
     #deltta computation
     if (graph_exists(params["graph_uri_older"]) and graph_exists(params["graph_uri_newer"])):
-        additions_computation(params["graph_uri_older"], params["graph_uri_newer"])
-        deletions_computation(params["graph_uri_older"], params["graph_uri_newer"])
         name = params["name"]
         v1 = params["older_version"]
         v2 = params["newer_version"]
 
-        console.print(f"\nDelta files created in 'test data/':", style="green")
-        console.print(f"  • additions_{name}_{v2}_minus_{v1}.ttl", style="cyan")
-        console.print(f"  • deletions_{name}_{v1}_minus_{v2}.ttl", style="cyan")
+        additions_file = LOCAL_DATA_DIR / f"additions_{name}_{v2}_minus_{v1}.ttl"
+        deletions_file = LOCAL_DATA_DIR / f"deletions_{name}_{v1}_minus_{v2}.ttl"
+
+        if additions_file.exists() and deletions_file.exists():
+            console.print(f"\nDelta files already exist, skipping computation:", style="yellow")
+            console.print(f"  • {additions_file.name}", style="cyan")
+            console.print(f"  • {deletions_file.name}", style="cyan")
+        else:
+            additions_computation(params["graph_uri_older"], params["graph_uri_newer"])
+            deletions_computation(params["graph_uri_older"], params["graph_uri_newer"])
+            console.print(f"\nDelta files created in 'test data/':", style="green")
+            console.print(f"  • additions_{name}_{v2}_minus_{v1}.ttl", style="cyan")
+            console.print(f"  • deletions_{name}_{v1}_minus_{v2}.ttl", style="cyan")
     else:
         console.print("The graphs do not exist in virtuoso, hence the delta computation cannot be proceeded. Please check the data!", style= "red")
     
@@ -133,4 +140,4 @@ def main():
     console.print(f"\nTotal runtime of pipeline: {seconds:.2f} seconds ({seconds/60:.2f} min)", style="yellow")
 
 
-main()  
+main()   
