@@ -8,7 +8,7 @@ from config import (
     LOCAL_DATA_DIR,
     VIRTUOSO_DATA_DIR,
 )
-from config import get_graph_uri
+from config import get_graph_uri, get_graph_snapshot_uri
 from test_querying import graph_exists
 
 
@@ -86,3 +86,26 @@ def load_selected_delta_files(additions_file: str, deletions_file: str) -> None:
             continue
         load_file(f"{filename}.ttl", graph_uri)
 
+def load_selected_ttl_files(file_older: str, file_newer: str) -> None:
+    
+    selected = {file_older, file_newer}
+    ttl_files = sorted(
+        f for f in LOCAL_DATA_DIR.glob("*.ttl") if f.name in selected
+    )
+    
+    if not ttl_files:
+        raise FileNotFoundError(f"No .ttl files found in {LOCAL_DATA_DIR}")
+
+    for file_path in ttl_files:
+        filename = file_path.name
+        parts = filename.split("_")
+        dataset_name = parts[0]
+        version = parts[1]
+        if ".ttl" in version:
+            version = version[:-4]
+
+        graph_uri = get_graph_snapshot_uri(dataset_name, version)
+        if graph_exists(graph_uri):
+            print(f"Already loaded: {graph_uri}")
+            continue
+        load_file(filename, graph_uri)
