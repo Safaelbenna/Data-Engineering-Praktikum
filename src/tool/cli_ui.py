@@ -1,19 +1,22 @@
 import time
+
 import pyfiglet
 import requests
 from rich.console import Console
-from config import LOCAL_DATA_DIR, get_graph_uri, SPARQL_ENDPOINT
+from config import LOCAL_DATA_DIR, get_graph_uri, SPARQL_ENDPOINT, get_graph_snapshot_uri
 import questionary
-from batch_splitting_WT import generate_batches
-from load_to_virtuoso import load_selected_delta_files
+from batch_splitting_WT import generate_batches, get_top_classes_combined, get_top_classes_by_entity_count,generate_class_based_batches
+from load_to_virtuoso import load_selected_delta_files, load_selected_ttl_files
 console = Console()
+
+
 
 
 
 def show_banner():
     banner = pyfiglet.figlet_format("DeltaGraph")
     console.print(banner, style="yellow")
-    console.print("A CLI for batching knowledge graph deltas\n", style="green")
+    console.print("Tool: A CLI for batching knowledge graph deltas\n", style="green")
 
 
 def get_available_names() -> dict:
@@ -71,6 +74,94 @@ def ask_validated_int(message: str, max_value: int, max_value_label: str) -> int
     answer = questionary.text(message, validate=validator).ask()
     return int(answer)
 
+#class based methods
+def select_class_for_batching(top_classes: list[dict]) -> dict:
+    if not top_classes:
+        print("No classes with changed entities found.")
+        return None
+
+    choices = [
+        questionary.Choice(
+            title=f"{c['class'].split('/')[-1]:20} ({c['added']} added / {c['removed']} removed)",
+            value=c
+        )
+        for c in top_classes
+    ]
+
+    selected = questionary.select(
+        "Which class do you want to batch updates for?",
+        choices=choices
+    ).ask()
+
+    return selected
+
+def get_class_batch_settings(selected_class: dict) -> dict:
+    max_added = selected_class["added"]
+    max_removed = selected_class["removed"]
+
+    num_batches = ask_validated_int(
+        "Number of batches:", max_added + max_removed, "total added + removed entities available"
+    )
+
+    entities_added_per_batch = ask_validated_int(
+        "Entities to add per batch:", max_added, "total added entities available"
+    )
+
+    entities_removed_per_batch = ask_validated_int(
+        "Entities to remove per batch:", max_removed, "total removed entities available"
+    )
+
+    if ((entities_added_per_batch == 0 and entities_removed_per_batch == 0) or num_batches == 0):
+        print("Empty batches")
+
+    elif (entities_removed_per_batch == 0):
+        num_batches = min(max_added // entities_added_per_batch, num_batches)
+    elif entities_added_per_batch == 0:
+        num_batches = min(max_removed // entities_removed_per_batch, num_batches)
+
+    else:
+        num_batches = min(min(max_added // entities_added_per_batch, max_removed // entities_removed_per_batch), num_batches)
+
+    return {
+        "num_batches": num_batches,
+        "entities_added_per_batch": entities_added_per_batch,
+        "entities_removed_per_batch": entities_removed_per_batch,
+    }
+
+def get_class_based_user_input(graph_uri_v1: str, graph_uri_v2: str, added_graph_uri: str, deleted_graph_uri: str) -> dict:
+
+
+    console.print("Finding top classes by number of changed entities...\n", style="blue")
+    top_classes = get_top_classes_combined(
+        added_graph_uri, deleted_graph_uri,
+        graph_uri_v2, graph_uri_v1,
+        10
+    )
+
+    selected_class = select_class_for_batching(top_classes)
+    if selected_class is None:
+        raise SystemExit(1)
+
+    console.print(
+        f"Selected class: {selected_class['class'].split('/')[-1]} "
+        f"({selected_class['added']:,} added / {selected_class['removed']:,} removed)",
+        style="cyan"
+    )
+
+    batch_settings = get_class_batch_settings(selected_class)
+
+    return {
+        "mode": "class",
+        "added_graph_uri": added_graph_uri,
+        "deleted_graph_uri": deleted_graph_uri,
+        "graph_uri_v1": graph_uri_v1,
+        "graph_uri_v2": graph_uri_v2,
+        "class_uri": selected_class["class"],
+        "num_batches": batch_settings["num_batches"],
+        "entities_added_per_batch": batch_settings["entities_added_per_batch"],
+        "entities_removed_per_batch": batch_settings["entities_removed_per_batch"],
+    }
+
 
 def get_user_input() -> dict:
     show_banner()
@@ -115,11 +206,8 @@ def get_user_input() -> dict:
     added_graph_uri = get_graph_uri(name, "added", v1, v2)
     deleted_graph_uri = get_graph_uri(name, "removed", v1, v2)
 
-        
     console.print(f"Loading delta files into virtuoso is starting...\n", style="blue")
     load_selected_delta_files(additions_file, deletions_file)
-   
-    
 
     total_additions = get_triple_count(added_graph_uri)
     total_deletions = get_triple_count(deleted_graph_uri)
@@ -128,6 +216,41 @@ def get_user_input() -> dict:
         f"Available: {total_additions:,} additions, {total_deletions:,} deletions.",
         style="cyan"
     )
+
+    batching_mode = questionary.select(
+        "How do you want to batch these updates?",
+        choices=["By raw triples", "By entity class"]
+    ).ask()
+
+    if batching_mode == "By entity class":
+        graph_uri_v1 = get_graph_snapshot_uri(name, v1)
+        graph_uri_v2 = get_graph_snapshot_uri(name, v2)
+        ttl_files = LOCAL_DATA_DIR.glob("*.ttl")
+        v1_found = False
+        v2_found = False
+        file_name_v1 = ""
+        file_name_v2 = ""
+        for file in ttl_files:
+            if not (file.name.startswith("additions_") or file.name.startswith("deletions_")) and name in file.name and (v1 in file.name):
+                v1_found = True
+                file_name_v1 = file.name
+
+            elif not (file.name.startswith("additions_") or file.name.startswith("deletions_")) and name in file.name and (v2 in file.name):
+                v2_found = True 
+                file_name_v2 = file.name
+            if v1_found and v2_found:
+                break
+        #if not in test data and not in V
+        if (v1_found and v2_found):
+            print("Need to find the available classes. Loading of snapshots started: ")
+            load_selected_ttl_files(file_name_v1, file_name_v2)
+
+        #if not in test data and not in V
+        elif not (v1_found and v2_found) :
+            print("Please check that both versions of the snapshots are in test data.")
+            exit(1)
+
+        return get_class_based_user_input(graph_uri_v1, graph_uri_v2, added_graph_uri, deleted_graph_uri)
 
     max_batches = total_additions + total_deletions
     num_batches = ask_validated_int(
@@ -151,8 +274,8 @@ def get_user_input() -> dict:
     else:
         num_batches = min(min(total_additions // additions_per_batch, total_deletions // deletions_per_batch), num_batches)
 
-
     return {
+        "mode": "triples",
         "name": name,
         "older_version": v1,
         "newer_version": v2,
@@ -165,13 +288,33 @@ def get_user_input() -> dict:
 
 
 def main():
-    start = time.perf_counter()
 
     params = get_user_input()
     console.print(params, style="blue")
+
+    if params["mode"] == "class":
+        if params["num_batches"] == 0:
+            exit(0)
+
+        start = time.perf_counter()
+        generate_class_based_batches(
+            graph_uri_added=params["added_graph_uri"],
+            graph_uri_deleted=params["deleted_graph_uri"],
+            graph_uri_v2=params["graph_uri_v2"],
+            graph_uri_v1=params["graph_uri_v1"],
+            class_uri=params["class_uri"],
+            num_batches=params["num_batches"],
+            entities_added_per_batch=params["entities_added_per_batch"],
+            entities_removed_per_batch=params["entities_removed_per_batch"],
+        )
+        seconds = time.perf_counter() - start
+        console.print(f"\nTotal runtime of tool: {seconds:.2f} seconds ({seconds/60:.2f} min)", style="yellow")
+        return
+
     if ((params["additions_per_batch"] == 0 and params["deletions_per_batch"] == 0) or params["num_batches"] == 0):
         exit(0)
 
+    start = time.perf_counter()
     generate_batches(
         graph_uri_added=params["added_graph_uri"],
         graph_uri_deleted=params["deleted_graph_uri"],
@@ -183,7 +326,7 @@ def main():
     seconds = time.perf_counter() - start
     console.print(f"\nTotal runtime of tool: {seconds:.2f} seconds ({seconds/60:.2f} min)", style="yellow")
 
-main()    
+main()
 
 
 
