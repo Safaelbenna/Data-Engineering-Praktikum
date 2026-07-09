@@ -65,10 +65,11 @@ def load_selected_ttl_files(file_older: str, file_newer: str) -> None:
 
     for file_path in ttl_files:
         filename = file_path.name
-        
         parts = filename.split("_")
         dataset_name = parts[0]
         version = parts[1]
+        if ".ttl" in version:
+            version = version[:-4]
 
         graph_uri = get_graph_uri(dataset_name, version)
         if graph_exists(graph_uri):

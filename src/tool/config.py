@@ -13,7 +13,11 @@ BASE_URI = "http://dbpedia.org"
 SPARQL_ENDPOINT = "http://localhost:8890/sparql"
 
 def get_graph_uri(dataset_name: str, tag: str, version1: str, version2: str) -> str:
+    
     return f"{BASE_URI}/delta/{dataset_name}/{version1}_{version2}/{tag}"
+ 
+   
 
-
-
+def get_graph_snapshot_uri(dataset_name: str, tag: str) -> str:
+    
+    return f"{BASE_URI}/snapshot/{tag}/{dataset_name}"
