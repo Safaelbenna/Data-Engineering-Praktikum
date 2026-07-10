@@ -11,3 +11,7 @@ __pycache__/
 *1.txt
 *2.txt
 *.trig
+
+# Virtual Environment Folder
+venv/
+docker-compose.esaf.yml

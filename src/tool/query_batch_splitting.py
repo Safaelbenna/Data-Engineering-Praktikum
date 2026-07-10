@@ -31,10 +31,12 @@ def generate_batches(graph_uri_added: str,
     graph_uri_deleted: str,
     num_batches: int,
     additions_per_batch: int,
-    deletions_per_batch: int) -> None:
+    deletions_per_batch: int) -> list[dict]:
 
     def helper(name, graph_uri, limit, offset):
         results[name] = fetch_triples(graph_uri, limit, offset)
+    
+    batches = []
     
     for i in range(num_batches):
 
@@ -59,7 +61,9 @@ def generate_batches(graph_uri_added: str,
         "length_deletions": count_triples_in_text(results["deletions"]) 
         }
         
+        batches.append(batch)
         print(f"--- Batch {i+1} ---")
         print(batch)
         print("time: ", end_del - start_add)
         print()
+    return batches

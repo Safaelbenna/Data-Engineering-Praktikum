@@ -1,5 +1,5 @@
 from test_querying import graph_exists
-from config import GRAPH_2021, GRAPH_2022
+from config import GRAPH_2021, GRAPH_2022, CONTAINER_NAME
 import subprocess
 #from tool.config import ADDED_GRAPH_B, REMOVED_GRAPH_B
 ADDED_GRAPH_B = "http://dbpedia.org/delta/added_big" 
@@ -24,7 +24,7 @@ def validate() -> None:
     """
 
     result = subprocess.run(
-        ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
+        ["docker", "exec", "-i", CONTAINER_NAME, "isql", "1111", "dba", "mysecret"],
         input=query,
         text=True,
         capture_output=True,
@@ -48,7 +48,7 @@ def validate() -> None:
     exit;
     """
     result_delete = subprocess.run(
-            ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
+            ["docker", "exec", "-i", CONTAINER_NAME, "isql", "1111", "dba", "mysecret"],
             input=query_delete,
             text=True,
             capture_output=True,
@@ -71,7 +71,7 @@ def validate() -> None:
     """
 
     result_add = subprocess.run(
-            ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
+            ["docker", "exec", "-i", CONTAINER_NAME, "isql", "1111", "dba", "mysecret"],
             input=query_add,
             text=True,
             capture_output=True,
@@ -91,7 +91,7 @@ def validate() -> None:
     exit;
     """
     result_verify = subprocess.run(
-            ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
+            ["docker", "exec", "-i", CONTAINER_NAME, "isql", "1111", "dba", "mysecret"],
             input=query_verify,
             text=True,
             capture_output=True,
@@ -112,7 +112,7 @@ def validate() -> None:
     exit;
     """
     result_verify2 = subprocess.run(
-            ["docker", "exec", "-i", "deltagraph_virtuoso", "isql", "1111", "dba", "mysecret"],
+            ["docker", "exec", "-i", CONTAINER_NAME, "isql", "1111", "dba", "mysecret"],
             input=query_verify2,
             text=True,
             capture_output=True,
