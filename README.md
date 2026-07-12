@@ -28,6 +28,21 @@ docker pull openlink/virtuoso-opensource-7
 ```
 pip install -r requirements.txt
 ```
+### Adding Snapshot Data
+
+Files placed in `test data/` must follow this naming convention:
+<dataset-name>-<version>.ttl
+
+**Examples:**
+mappingbased-objects_2021.ttl
+geo-coordinates_2018.ttl
+
+**Rules:**
+* `<dataset-name>` may contain dashes (e.g. `mappingbased-objects`).
+* `<version>` must always be the **last** dash-separated segment of the filename.
+* Only `.ttl` files are recognized.
+
+Files that don't follow this pattern will be skipped by the pipeline and tool when scanning `test data/` for available datasets and versions. To add a new snapshot (e.g. a future DBpedia release), simply place the `.ttl` file in `test data/` following this convention. No code changes are required.
 
 ### Executing program
 
@@ -36,11 +51,14 @@ pip install -r requirements.txt
 docker compose up -d
 ```
 The SPARQL endpoint should then be accessible at `http://localhost:8890/sparql`.
-* Run the main pipeline:
+* Run the pipeline CLI :
 ```
-python src/main.py
+python src/pipeline/cli_ui.py
 ```
-
+* Run the tool CLI :
+```
+python src/tool/cli_ui.py
+```
 ## Help
 
 If Virtuoso isn't responding, check that the container is running:
@@ -59,24 +77,20 @@ Then clear the graph(s) you want to remove (swap in the relevant graph URI):
 ```
 SPARQL CLEAR GRAPH <http://dbpedia.org/snapshot/v1/mappingbased-objects>;
 SPARQL CLEAR GRAPH <http://dbpedia.org/snapshot/v2/mappingbased-objects>;
-
-
 ```
 It's also worth clearing the corresponding entry from the load list so Virtuoso doesn't think the graph is still loaded:
 ```
 DELETE FROM DB.DBA.load_list WHERE ll_graph IN (
-    'http://dbpedia.org/snapshot/v1/mappingbased-objects',
+    'http://dbpedia.org/snapshot/v2/mappingbased-objects',
     'http://dbpedia.org/snapshot/v2/mappingbased-objects'
 );
 ```
 
 
-
-A checkpoint may be needed after this — still confirming. (verify whether to keep this or not)
-
 ### Checking how many triples are loaded
 
 ```
+SPARQL SELECT COUNT(*) WHERE { GRAPH <http://dbpedia.org/snapshot/v1/mappingbased-objects> { ?s ?p ?o } };
 SPARQL SELECT COUNT(*) WHERE { GRAPH <http://dbpedia.org/snapshot/v1/mappingbased-objects> { ?s ?p ?o } };
 ```
 

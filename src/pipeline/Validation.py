@@ -1,17 +1,13 @@
 from test_querying import graph_exists
 from config import GRAPH_2021, GRAPH_2022, CONTAINER_NAME
 import subprocess
-#from tool.config import ADDED_GRAPH_B, REMOVED_GRAPH_B
 ADDED_GRAPH_B = "http://dbpedia.org/delta/added_big" 
 REMOVED_GRAPH_B = "http://dbpedia.org/delta/removed_big"
 
 def validate() -> None:
     updated_graph_uri = "http://dbpedia.org/snapshot/updated"
 
-    # original Snapshot loading into the updated graph
-    # if graph_exists(updated_graph_uri):
-    #         print(f"Already loaded: {updated_graph_uri}")
-    # else:
+
     query = f"""
         SPARQL DEFINE sql:log-enable 3
         INSERT INTO GRAPH <{updated_graph_uri}> {{

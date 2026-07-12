@@ -103,18 +103,9 @@ def main():
     console.print(f"Loading files into virtuoso is starting...\n", style="blue")
     load_selected_ttl_files(params["file_older"], params["file_newer"])
 
-    #confirming that the graphs exist in virtuoso
-    print("\nChecking if graphs exist...")
-    print("older graph exists:", graph_exists(params["graph_uri_older"]))
-    print("newer graph exists:", graph_exists(params["graph_uri_newer"]))
 
-    #previewing the data to the user 
-    print("\nPreviewing 10 first triples...")
-    preview_graph(params["graph_uri_older"])
-    preview_graph(params["graph_uri_newer"])
-    print()
 
-    #deltta computation
+    #delta computation
     if (graph_exists(params["graph_uri_older"]) and graph_exists(params["graph_uri_newer"])):
         name = params["name"]
         v1 = params["older_version"]

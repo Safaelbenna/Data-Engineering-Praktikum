@@ -97,10 +97,7 @@ def get_top_classes_combined(
     graph_uri_v2: str,
     top_n: int = 10
 ) -> list[dict]:
-    """
-    Returns the top N classes ranked by (added_count + removed_count),
-    each with its individual added/removed entity counts.
-    """
+
     added_counts = get_top_classes_by_entity_count(added_graph_uri, graph_uri_v2)
     removed_counts = get_top_classes_by_entity_count(removed_graph_uri, graph_uri_v1)
 
@@ -167,7 +164,7 @@ def generate_class_based_batches(
     num_batches: int,
     entities_added_per_batch: int,
     entities_removed_per_batch: int,
-) -> list[dict]: #should return dict/ list
+) -> list[dict]: 
 
     total_additions_time = 0
     total_deletions_time = 0

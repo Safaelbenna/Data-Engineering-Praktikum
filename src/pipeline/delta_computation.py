@@ -21,7 +21,6 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
     """
 
     start = time.perf_counter()
-    #value = "v" if ("v" in graph_uri1) else "202"
     dataset_name = graph_uri1.rstrip("/").split("/")[-1]
     v1 = graph_uri1.rstrip("/").split("/")[-2]
     v2 = graph_uri2.rstrip("/").split("/")[-2]
@@ -60,6 +59,7 @@ def additions_computation(graph_uri1: str, graph_uri2: str) -> None:
     )
     end = time.perf_counter()
     seconds = end - start
+
     # deleting the .txt file
     if os.path.exists(f"additions_{dataset_name}_{v2}_minus_{v1}.txt"):
         os.remove(f"additions_{dataset_name}_{v2}_minus_{v1}.txt")
@@ -128,6 +128,7 @@ def deletions_computation(graph_uri1: str, graph_uri2: str) -> None:
     )
     end = time.perf_counter()
     seconds = end - start
+    
     # deleting the .txt file
     if os.path.exists(f"deletions_{dataset_name}_{v1}_minus_{v2}.txt"):
         os.remove(f"deletions_{dataset_name}_{v1}_minus_{v2}.txt")
